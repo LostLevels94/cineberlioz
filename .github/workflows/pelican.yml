@@ -1,0 +1,40 @@
+name: deploy-pelican
+
+on:
+  # Trigger the workflow on push on main branch,
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+    - name: Install dependencies and theme
+      run: |
+          echo "Install dependencies"
+          pip install -r requirements.txt
+          echo "Clone repo with pelican theme"
+          git clone ${{ secrets.PELICAN_THEME_REPO }}
+          echo "Install pelican theme"
+          pelican-themes --install ${{ secrets.PELICAN_THEME_NAME }}
+      env:
+        PELICAN_THEME_NAME: ${{ secrets.PELICAN_THEME_NAME }}
+        PELICAN_THEME_REPO: ${{ secrets.PELICAN_THEME_REPO }}
+    - name: Compile with pelican
+      run: |
+          pelican content
+      env:
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.ref == 'refs/heads/main' }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: blog-output/
+        force_orphan: true
