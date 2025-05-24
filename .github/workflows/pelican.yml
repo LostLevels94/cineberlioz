@@ -28,7 +28,8 @@ jobs:
         PELICAN_THEME_REPO: ${{ secrets.PELICAN_THEME_REPO }}
     - name: Compile with pelican
       run: |
-          pelican "content/"
+          git checkout gh-pages
+          pelican "content"
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: ${{ github.ref == 'refs/heads/main' }}
